@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小禾 AI 音色工具箱</title>
+<style>
+:root{
+    --bg-main:#192250;
+    --bg-gradient-deep:#141b40;
+    --bg-gradient-light:#212a63;
+    --glass-bg:rgba(255,255,255,0.05);
+    --glass-border:rgba(255,255,255,0.11);
+    --glass-shadow:0 16px 42px rgba(0,0,0,0.32);
+    --text-white:#e9ecf8;
+    --text-gray:#b0b9e0;
+    --input-bg:rgba(255,255,255,0.07);
+    /* 截图同款按钮色 */
+    --btn-blue:#4284f5;
+    --btn-green:#46bc9c;
+    --btn-purple:#8366ef;
+    --btn-red:#ef5353;
+    --btn-gray:rgba(255,255,255,0.09);
+}
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+html,body{
+    min-height:100vh;
+}
+body{
+    background:radial-gradient(circle at 10% 20%, rgba(66,132,245,0.14), transparent 30%),
+                radial-gradient(circle at 90% 15%, rgba(131,102,239,0.10), transparent 35%),
+                linear-gradient(140deg, var(--bg-gradient-deep), var(--bg-main), var(--bg-gradient-light));
+    background-attachment:fixed;
+    font-family:system-ui, sans-serif;
+    padding:16px;
+    color:var(--text-white);
+}
+/* 玻璃钢卡片 截图同款圆角磨砂 */
+.glass-card{
+    background:var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border:1px solid var(--glass-border);
+    border-radius:22px;
+    padding:26px;
+    max-width:560px;
+    margin:12px auto;
+    box-shadow:var(--glass-shadow);
+}
+.box{
+    max-width:560px;
+    margin:0 auto;
+    padding:10px;
+}
+h1,h2{
+    text-align:center;
+    font-size:28px;
+    font-weight:500;
+    margin-bottom:24px;
+    color:var(--text-white);
+}
+/* 登录注册标签栏 */
+.tab-group{
+    display:flex;
+    border-radius:16px;
+    overflow:hidden;
+    background:rgba(255,255,255,0.06);
+    margin-bottom:20px;
+}
+.tab-item{
+    flex:1;
+    text-align:center;
+    padding:14px 0;
+    color:var(--text-gray);
+    cursor:pointer;
+    font-weight:500;
+}
+.tab-item.active{
+    background:rgba(66,132,245,0.16);
+    color:var(--text-white);
+}
+/* 输入框 */
+input{
+    width:100%;
+    padding:15px 18px;
+    margin:9px 0;
+    background:var(--input-bg);
+    border:1px solid var(--glass-border);
+    border-radius:12px;
+    color:var(--text-white);
+    font-size:16px;
+    outline:none;
+}
+input:focus{
+    border-color:var(--btn-blue);
+}
+/* 按钮样式 完全匹配截图分层配色 */
+button{
+    width:100%;
+    padding:16px;
+    margin:9px 0;
+    border:none;
+    border-radius:12px;
+    color:#fff;
+    font-size:16px;
+    font-weight:500;
+    cursor:pointer;
+    transition:opacity 0.2s;
+}
+button:active{
+    opacity:0.86;
+}
+.btn-blue{
+    background:var(--btn-blue);
+}
+.btn-green{
+    background:var(--btn-green);
+}
+.btn-purple{
+    background:var(--btn-purple);
+}
+.btn-red{
+    background:var(--btn-red);
+}
+.btn-gray{
+    background:var(--btn-gray);
+}
+.del-row{
+    display:flex;
+    gap:10px;
+    margin:14px 0;
+}
+.del-row button{
+    width:50%;
+}
+/* 日志框 截图浅白底 */
+#logBox{
+    width:100%;
+    min-height:180px;
+    background:rgba(255,255,255,0.93);
+    border-radius:14px;
+    margin-top:22px;
+    padding:18px;
+    white-space:pre-wrap;
+    font-size:14px;
+    color:#141b40;
+    line-height:1.7;
+}
+/* 弹窗 */
+.modal-wrap{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.65);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+}
+.modal-content{
+    background:linear-gradient(140deg, #1e2658, #273070);
+    backdrop-filter:blur(22px);
+    border:1px solid var(--glass-border);
+    border-radius:22px;
+    padding:28px 22px;
+    width:90%;
+    max-width:420px;
+    text-align:center;
+}
+.modal-content button{
+    width:auto;
+    padding:11px 28px;
+    margin-top:10px;
+}
+.hidden{
+    display:none !important;
+}
+/* 底部运行时长栏 */
+.footer-time{
+    position:fixed;
+    left:0;
+    bottom:0;
+    width:100%;
+    padding:11px;
+    text-align:center;
+    background:rgba(20,27,64,0.88);
+    backdrop-filter:blur(10px);
+    border-top:1px solid var(--glass-border);
+    font-size:13px;
+    color:var(--text-gray);
+    z-index:998;
+}
+.toast-tip{
+    position:fixed;
+    top:40%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:rgba(0,0,0,0.76);
+    color:#fff;
+    padding:13px 24px;
+    border-radius:10px;
+    z-index:99999;
+}
+/* 管理员表格 */
+.admin-table{
+    width:100%;
+    border-collapse:collapse;
+    margin:16px 0;
+}
+.admin-table th,.admin-table td{
+    padding:10px;
+    border:1px solid var(--glass-border);
+    color:var(--text-gray);
+    font-size:14px;
+}
+.admin-table th{
+    background:var(--input-bg);
+}
+/* 注册提示框 无黄色 */
+.notice-box{
+    background:rgba(255,255,255,0.04);
+    border:1px solid var(--glass-border);
+    border-radius:16px;
+    padding:15px;
+    margin-bottom:20px;
+    color:var(--text-gray);
+    font-size:14px;
+    line-height:1.7;
+}
+</style>
+</head>
+<body>
+<div class="footer-time">
+    本站累计运行时长：<span id="totalRunTime">0天0时0分0秒</span>
+</div>
+<div id="toastContainer"></div>
+
+<!-- 弹窗模块 -->
+<div id="welcomeModal" class="modal-wrap hidden">
+    <div class="modal-content">
+        <h3>👋 欢迎使用音色工具箱</h3>
+        <button class="btn-blue" id="closeWelcome">开始使用</button>
+    </div>
+</div>
+<div id="adminSuccessModal" class="modal-wrap hidden">
+    <div class="modal-content">
+        <h3>👑 管理员登录成功</h3>
+        <button class="btn-blue" id="closeAdminTip">确定</button>
+    </div>
+</div>
+<div id="resetPwdModal" class="modal-wrap hidden">
+    <div class="modal-content">
+        <h3>🔑 密保重置密码</h3>
+        <input type="text" id="resetAcc" placeholder="注册账号">
+        <input type="text" id="resetQ" placeholder="密保问题">
+        <input type="text" id="resetA" placeholder="密保答案">
+        <input type="password" id="newPwdInput" placeholder="新密码">
+        <input type="password" id="newPwd2Input" placeholder="确认新密码">
+        <button id="submitReset" class="btn-blue">确认重置</button>
+        <button id="closeResetModal" class="btn-gray">取消</button>
+    </div>
+</div>
+
+<!-- 登录注册面板（页面最前置） -->
+<div id="authWrap" class="glass-card">
+    <h1>🎵 小禾 AI 音色工具箱</h1>
+    <div class="notice-box">
+        注册规则：<br>
+        1. 无需邮箱，账号4-16位字母数字，禁止纯数字<br>
+        2. 密码禁止123456/111111等简单弱密码<br>
+        3. 单IP最多注册2个账号，超出锁定20分钟<br>
+        4. 忘记密码可通过密保问题重置
+    </div>
+    <div class="tab-group">
+        <div id="tabLogin" class="tab-item active">登录</div>
+        <div id="tabReg" class="tab-item">注册</div>
+    </div>
+    <div id="loginFormWrap">
+        <input type="text" id="loginUserInput" placeholder="账号">
+        <input type="password" id="loginPwdInput" placeholder="密码">
+        <div style="text-align: right; margin: 6px 2px;">
+            <span id="openResetModalBtn" style="color: var(--btn-blue); font-size:14px; cursor:pointer;">忘记密码？</span>
+        </div>
+        <button id="loginSubmitBtn" class="btn-blue">登录</button>
+        <button class="btn-purple" onclick="window.open('https://qm.qq.com/q/RNPgd1P3Wg')">📞 联系客服</button>
+    </div>
+    <div id="regFormWrap" class="hidden">
+        <input type="text" id="regUserInput" placeholder="账号">
+        <input type="password" id="regPwdInput" placeholder="密码">
+        <input type="password" id="regPwd2Input" placeholder="确认密码">
+        <input type="text" id="regQInput" placeholder="自定义密保问题">
+        <input type="text" id="regAInput" placeholder="密保答案">
+        <button id="regSubmitBtn" class="btn-blue">注册</button>
+        <button class="btn-purple" onclick="window.open('https://qm.qq.com/q/RNPgd1P3Wg')">📞 联系客服</button>
+    </div>
+</div>
+
+<!-- 普通用户音色操作面板（和你截图布局、按钮颜色完全匹配） -->
+<div id="userToolWrap" class="box hidden">
+    <div class="glass-card">
+        <h2>🎵 音色工具箱</h2>
+        <input type="text" id="apiKeyInput" placeholder="输入302AI API Key">
+        <input type="text" id="toneNameInput" placeholder="自定义音色名称（上传前填写）">
+        <input type="text" id="toneIdInput" placeholder="音色ID（上传自动填充）">
+        <button class="btn-blue" onclick="uploadAudioVoice()">1. 上传音色训练</button>
+        <button class="btn-green" onclick="queryToneById()">2. ID查询音色状态</button>
+        <button class="btn-purple" onclick="openDeleteConfirm()">3. 删除指定音色</button>
+        <button class="btn-red" onclick="loadAllToneList()">4. 加载账号全部音色</button>
+        <button class="btn-purple" onclick="openQQChat()">联系客服</button>
+        <!-- 删除确认栏 修复绑定点击事件 -->
+        <div class="del-row" id="deleteConfirmRow" style="display: none;">
+            <button class="btn-red" onclick="confirmDeleteTone()">✅ 永久删除</button>
+            <button class="btn-gray" onclick="cancelDeleteTone()">❌ 取消</button>
+        </div>
+        <button class="btn-gray" onclick="logoutCurrentUser()">退出登录</button>
+        <div id="logBox">等待操作...</div>
+    </div>
+</div>
+
+<!-- 管理员后台面板 -->
+<div id="adminBackWrap" class="glass-card hidden">
+    <h2>👑 管理员后台管理</h2>
+    <p>平台总注册用户：<span id="totalUserCount">0</span></p>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>账号</th>
+                <th>注册时间</th>
+                <th>音色数量</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="userTableBody"></tbody>
+    </table>
+    <button class="btn-gray" onclick="logoutCurrentUser()">退出登录</button>
+</div>
+
+<input type="file" id="audioFileSelector" accept="audio/*" style="display: none;">
+<script>
+// 后端&AI接口地址 固定无误
+const API_BASE_URL = "https://hhhl.onrender.com/api";
+const AI_API_HOST = "https://api.302ai.cn";
+let loginAccount = "";
+const LOCAL_IP_KEY = "ip_reg_limit_store";
+
+// 全局轻提示
+function showToastMessage(text){
+    const container = document.getElementById("toastContainer");
+    container.innerHTML = `<div class="toast-tip">${text}</div>`;
+    setTimeout(()=> container.innerHTML = "", 2200);
+}
+// 弹窗开关
+function openModalById(id){
+    document.getElementById(id).classList.remove("hidden");
+}
+function closeModalById(id){
+    document.getElementById(id).classList.add("hidden");
+}
+// 页面面板统一隐藏
+function hideAllPagePanels(){
+    document.getElementById("authWrap").classList.remove("hidden");
+    document.getElementById("userToolWrap").classList.add("hidden");
+    document.getElementById("adminBackWrap").classList.add("hidden");
+}
+// 展示用户工具箱
+function showUserToolPanel(){
+    document.getElementById("authWrap").classList.add("hidden");
+    document.getElementById("userToolWrap").classList.remove("hidden");
+}
+// 展示管理员后台
+function showAdminPanel(){
+    document.getElementById("authWrap").classList.add("hidden");
+    document.getElementById("adminBackWrap").classList.remove("hidden");
+    renderAllUserTable();
+}
+// 弱密码校验
+function checkWeakPassword(pwd){
+    const allNumReg = /^\d+$/;
+    const repeatNumReg = /^(\d)\1{5}/;
+    const simplePwdList = ["123456","654321","111111","000000"];
+    return allNumReg.test(pwd) || repeatNumReg.test(pwd) || simplePwdList.includes(pwd);
+}
+// IP注册本地存储
+function getIpRegisterRecord(){
+    const storageStr = localStorage.getItem(LOCAL_IP_KEY);
+    return storageStr ? JSON.parse(storageStr) : {count:0, lockEnd:0};
+}
+function saveIpRecord(obj){
+    localStorage.setItem(LOCAL_IP_KEY, JSON.stringify(obj));
+}
+
+// 登录/注册标签切换
+document.getElementById("tabLogin").onclick = ()=>{
+    document.getElementById("tabLogin").classList.add("active");
+    document.getElementById("tabReg").classList.remove("active");
+    document.getElementById("loginFormWrap").classList.remove("hidden");
+    document.getElementById("regFormWrap").classList.add("hidden");
+}
+document.getElementById("tabReg").onclick = ()=>{
+    document.getElementById("tabReg").classList.add("active");
+    document.getElementById("tabLogin").classList.remove("active");
+    document.getElementById("regFormWrap").classList.remove("hidden");
+    document.getElementById("loginFormWrap").classList.add("hidden");
+}
+// 弹窗关闭绑定
+document.getElementById("openResetModalBtn").onclick = ()=> openModalById("resetPwdModal");
+document.getElementById("closeResetModal").onclick = ()=> closeModalById("resetPwdModal");
+document.getElementById("closeWelcome").onclick = ()=> closeModalById("welcomeModal");
+document.getElementById("closeAdminTip").onclick = ()=> closeModalById("adminSuccessModal");
+
+// 注册提交逻辑
+document.getElementById("regSubmitBtn").onclick = async ()=>{
+    const ipRecord = getIpRegisterRecord();
+    const nowTimeStamp = Date.now();
+    if(ipRecord.lockEnd > nowTimeStamp){
+        const waitMin = Math.ceil((ipRecord.lockEnd - nowTimeStamp) / 60000);
+        return showToastMessage(`IP注册受限，请等待${waitMin}分钟`);
+    }
+    if(ipRecord.count >= 2){
+        saveIpRecord({count:2, lockEnd: nowTimeStamp + 20 * 60 * 1000});
+        return showToastMessage("当前IP已达注册上限");
+    }
+    const acc = document.getElementById("regUserInput").value.trim();
+    const pwd = document.getElementById("regPwdInput").value.trim();
+    const pwd2 = document.getElementById("regPwd2Input").value.trim();
+    const q = document.getElementById("regQInput").value.trim();
+    const a = document.getElementById("regAInput").value.trim();
+    const accRule = /^[a-zA-Z0-9]{4,16}$/;
+    if(!accRule.test(acc) || /^\d+$/.test(acc)) return showToastMessage("账号格式错误，禁止纯数字");
+    if(pwd !== pwd2) return showToastMessage("两次输入密码不一致");
+    if(checkWeakPassword(pwd)) return showToastMessage("请勿使用简单弱密码");
+    if(q.length <4 || a.length <2) return showToastMessage("密保问题/答案填写完整");
+    const res = await fetch(`${API_BASE_URL}/register`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({account:acc, pwd:pwd, secretQuestion:q, secretAnswer:a})
+    });
+    const resData = await res.json();
+    showToastMessage(resData.msg);
+    if(resData.code === 200){
+        saveIpRecord({count: ipRecord.count + 1, lockEnd:0});
+        document.getElementById("tabLogin").click();
+    }
+}
+// 登录提交
+document.getElementById("loginSubmitBtn").onclick = async ()=>{
+    const acc = document.getElementById("loginUserInput").value.trim();
+    const pwd = document.getElementById("loginPwdInput").value.trim();
+    const res = await fetch(`${API_BASE_URL}/userLogin`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({account:acc, pwd:pwd})
+    });
+    const resData = await res.json();
+    showToastMessage(resData.msg);
+    if(resData.code === 200){
+        loginAccount = acc;
+        if(resData.isAdmin){
+            showAdminPanel();
+            openModalById("adminSuccessModal");
+        }else{
+            showUserToolPanel();
+            openModalById("welcomeModal");
+        }
+    }
+}
+// 退出登录
+function logoutCurrentUser(){
+    loginAccount = "";
+    hideAllPagePanels();
+    showToastMessage("已退出登录");
+}
+// 密保重置密码
+document.getElementById("submitReset").onclick = async ()=>{
+    const acc = document.getElementById("resetAcc").value.trim();
+    const q = document.getElementById("resetQ").value.trim();
+    const a = document.getElementById("resetA").value.trim();
+    const newPwd = document.getElementById("newPwdInput").value.trim();
+    const newPwd2 = document.getElementById("newPwd2Input").value.trim();
+    if(newPwd !== newPwd2 || checkWeakPassword(newPwd)) return showToastMessage("密码格式不合法");
+    const res = await fetch(`${API_BASE_URL}/findPwdBySecret`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({account:acc, question:q, answer:a, newPwd:newPwd})
+    });
+    const resData = await res.json();
+    showToastMessage(resData.msg);
+    if(resData.code === 200) closeModalById("resetPwdModal");
+}
+// 管理员加载用户列表
+async function renderAllUserTable(){
+    const res = await fetch(`${API_BASE_URL}/getAllUser`);
+    const resData = await res.json();
+    document.getElementById("totalUserCount").innerText = resData.list.length;
+    const tbody = document.getElementById("userTableBody");
+    tbody.innerHTML = "";
+    resData.list.forEach(user=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${user.account}</td>
+            <td>${user.regTime}</td>
+            <td>${user.voices.length}</td>
+            <td><button class="btn-mini btn-red" onclick="deleteTargetUser('${user.account}')">删除</button></td>
+        `;
+        tbody.appendChild(tr);
+    })
+}
+window.deleteTargetUser = async (acc)=>{
+    if(!confirm(`确认永久删除用户【${acc}】？`)) return;
+    await fetch(`${API_BASE_URL}/delUser`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({account:acc})
+    });
+    renderAllUserTable();
+    showToastMessage("用户删除完成");
+}
+
+// ========== 音色操作核心函数（修复删除接口逻辑，上传稳定返回ID） ==========
+function appendLog(text){
+    const logBox = document.getElementById("logBox");
+    const now = new Date().toLocaleTimeString();
+    logBox.textContent += `\n[${now}] ${text}`;
+}
+function clearLogText(text){
+    document.getElementById("logBox").textContent = text;
+}
+function copyClipboard(text){
+    const tempInput = document.createElement("input");
+    tempInput.style.position = "fixed";
+    tempInput.style.opacity = "0";
+    tempInput.value = text;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+}
+function openQQChat(){
+    window.open("https://qm.qq.com/q/RNPgd1P3Wg", "_blank");
+}
+
+// 1.上传音色（原版稳定逻辑，自动填充ID）
+async function uploadAudioVoice(){
+    const apiKey = document.getElementById("apiKeyInput").value.trim();
+    const toneName = document.getElementById("toneNameInput").value.trim();
+    if(!apiKey) return clearLogText("⚠️ 请先填写302AI API Key");
+    if(!toneName) return clearLogText("⚠️ 请填写自定义音色名称");
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "audio/*";
+    fileInput.onchange = async (e)=>{
+        const targetFile = e.target.files[0];
+        if(!targetFile) return;
+        appendLog(`选中音频文件：${targetFile.name}，音色命名：${toneName}`);
+        clearLogText("正在提交音色训练请求至接口...");
+        const formData = new FormData();
+        formData.append("type", "tts");
+        formData.append("title", toneName);
+        formData.append("train_mode", "fast");
+        formData.append("visibility", "private");
+        formData.append("voices", targetFile);
+        try{
+            const resp = await fetch(`${AI_API_HOST}/fish-audio/model`,{
+                method:"POST",
+                headers: { Authorization: "Bearer " + apiKey },
+                body: formData
+            });
+            if(!resp.ok) throw new Error(`接口异常，状态码：${resp.status}`);
+            const data = await resp.json();
+            const toneId = data._id;
+            copyClipboard(toneId);
+            document.getElementById("toneIdInput").value = toneId;
+            const successInfo = `✅ 音色上传训练成功\n音色名称：${toneName}\n音色ID：${toneId}\n✅ ID已自动复制剪贴板`;
+            clearLogText(successInfo);
+        }catch(err){
+            clearLogText(`❌ 上传失败：${err.message}\n请核对API密钥、音频文件或网络连接`);
+        }
+    };
+    fileInput.click();
+}
+
+// 2.查询音色ID
+async function queryToneById(){
+    const apiKey = document.getElementById("apiKeyInput").value.trim();
+    const toneId = document.getElementById("toneIdInput").value.trim();
+    if(!apiKey) return clearLogText("⚠️ 请填写API Key");
+    if(!toneId) return clearLogText("⚠️ 输入需要查询的音色ID");
+    clearLogText("正在拉取音色信息...");
+    try{
+        const resp = await fetch(`${AI_API_HOST}/fish-audio/model/${toneId}`,{
+            headers: { Authorization: "Bearer " + apiKey }
+        });
+        if(!resp.ok) throw new Error(`查询失败，状态码${resp.status}`);
+        const data = await resp.json();
+        const stateText = data.state === "trained" ? "✅ 训练完成" : data.state === "training" ? "⚙️ 训练中" : "⏳ 排队等待";
+        clearLogText(`✅ 查询成功\n音色名称：${data.title}\n训练状态：${stateText}\n音色ID：${data._id}`);
+    }catch(err){
+        clearLogText(`❌ 查询失败：${err.message}`);
+    }
+}
+
+// 3.打开删除确认栏
+function openDeleteConfirm(){
+    const toneId = document.getElementById("toneIdInput").value.trim();
+    if(!toneId) return clearLogText("⚠️ 请先输入音色ID");
+    clearLogText(`即将永久删除音色ID：${toneId}\n确认按钮执行删除操作`);
+    document.getElementById("deleteConfirmRow").style.display = "flex";
+}
+
+// 4.【已修复】永久删除音色核心函数，DELETE请求完整鉴权，不会删除失效
+async function confirmDeleteTone(){
+    document.getElementById("deleteConfirmRow").style.display = "none";
+    const apiKey = document.getElementById("apiKeyInput").value.trim();
+    const toneId = document.getElementById("toneIdInput").value.trim();
+    clearLogText("正在发送删除指令...");
+    try{
+        // 标准302AI删除接口：DELETE方法 + 完整鉴权头
+        const resp = await fetch(`${AI_API_HOST}/fish-audio/model/${toneId}`,{
+            method:"DELETE",
+            headers: {
+                "Authorization": "Bearer " + apiKey,
+                "Content-Type": "application/json"
+            }
+        });
+        if(!resp.ok) throw new Error(`接口返回异常，状态码：${resp.status}`);
+        clearLogText("✅ 删除成功，该音色已永久移除");
+    }catch(err){
+        clearLogText(`❌ 删除失败：${err.message}\n排查：1.API密钥权限 2.音色ID是否存在 3.音色是否正在训练`);
+    }
+}
+
+// 取消删除
+function cancelDeleteTone(){
+    document.getElementById("deleteConfirmRow").style.display = "none";
+    clearLogText("已取消本次删除操作");
+}
+
+// 4.加载全部音色列表
+async function loadAllToneList(){
+    const apiKey = document.getElementById("apiKeyInput").value.trim();
+    if(!apiKey) return clearLogText("⚠️ 请填写API Key");
+    clearLogText("正在加载账号全部音色...");
+    let toneList = [], pageNum = 1, loadErr = false;
+    while(true){
+        try{
+            const resp = await fetch(`${AI_API_HOST}/fish-audio/model?page_size=50&page_number=${pageNum}`,{
+                headers: { Authorization: "Bearer " + apiKey }
+            });
+            if(!resp.ok) throw new Error(`分页${pageNum}加载失败`);
+            const data = await resp.json();
+            if(!data.items?.length) break;
+            toneList.push(...data.items);
+            pageNum++;
+        }catch(err){
+            loadErr = true;
+            appendLog(`分页${pageNum}加载异常：${err.message}`);
+            break;
+        }
+    }
+    if(!toneList.length) return clearLogText("当前账号暂无音色数据");
+    let showText = `✅ 共查询到 ${toneList.length} 个音色\n\n`;
+    toneList.forEach((item, idx)=>{
+        const stateTag = item.state === "trained" ? "✅已完成" : item.state === "training" ? "⚙️训练中" : "⏳排队";
+        showText += `${idx+1}. 音色名称：${item.title}\n音色ID：${item._id}\n训练状态：${stateTag}\n------------------------\n`;
+    });
+    if(loadErr) showText += "\n⚠️ 部分分页加载异常，列表不完整";
+    clearLogText(showText);
+}
+
+// 页面运行计时
+function initRuntimeTimer(){
+    let secCount = 0;
+    setInterval(()=>{
+        const day = Math.floor(secCount / 86400);
+        const hour = Math.floor((secCount % 86400) / 3600);
+        const min = Math.floor((secCount % 3600) / 60);
+        const sec = secCount % 60;
+        document.getElementById("totalRunTime").innerText = `${day}天${hour}时${min}分${sec}`;
+        secCount++;
+    }, 1000);
+}
+window.onload = ()=>{
+    hideAllPagePanels();
+    initRuntimeTimer();
+}
+</script>
+</body>
+</html>
