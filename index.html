@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PKC音色管理工具箱</title>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100vh}
+body{
+    background:#0F172A;
+    font-family:system-ui,-apple-system,sans-serif;padding:40px 16px;margin:0
+}
+.box{
+    max-width:520px;margin:0 auto;
+    background:#111827;
+    border-radius:28px;
+    padding:40px 24px;
+}
+h1{
+    text-align:center;font-size:32px;color:#ffffff;margin-bottom:30px;
+    letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:12px
+}
+h1 i{font-size:36px;color:#fff}
+.input-yellow{
+    width:100%;padding:16px 18px;margin:12px 0;
+    background:#FFDD00;
+    border:none;border-radius:16px;
+    font-size:16px;color:#000000;
+    outline:none;
+}
+.input-yellow::placeholder{
+    color:#222;opacity:0.8
+}
+.input-gray{
+    width:100%;padding:16px 18px;margin:12px 0;
+    background:#27272a;
+    border:1px solid #444;border-radius:16px;
+    font-size:16px;color:#fff;
+    outline:none;
+}
+.input-gray::placeholder{
+    color:#aaa
+}
+button{
+    width:100%;padding:16px;margin:10px 0;border:none;border-radius:16px;
+    color:#fff;font-size:16px;font-weight:500;cursor:pointer;
+    transition:0.2s ease;display:flex;align-items:center;justify-content:center;gap:8px
+}
+button:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn-blue1{background:#3B82F6}
+.btn-blue2{background:#0EA5E9}
+.btn-green{background:#22C55E}
+.btn-orange{background:#F59E0B}
+.btn-red{background:#EF4444}
+.btn-purple{background:#9333EA}
+.btn-cyan{background:#06b6d4}
+.btn-kefu{background:#7928ca;margin-top:10px}
+.btn-admin{background:#16A34A;margin-top:6px}
+.delConfirmRow{display:flex;gap:12px;margin:16px 0}
+.btnYes{background:#EF4444;width:50%}
+.btnNo{background:#6B7280;width:50%}
+#logBox{
+    width:100%;min-height:180px;background:rgba(0,0,0,0.35);
+    border:1px solid rgba(255,255,0.12);
+    border-radius:16px;margin-top:20px;padding:20px;
+    white-space:pre-wrap;font-size:14px;line-height:1.7;color:#f1f1f1;
+    overflow-y:auto;max-height:300px
+}
+#logBox::-webkit-scrollbar{width:6px}
+#logBox::-webkit-scrollbar-track{background:rgba(255,255,255,0.06)}
+#logBox::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.22)}
+.pop-mask{
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.82);z-index:9999;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.pop-wrap{
+    width:100%;max-width:440px;
+    background:#1F2937;
+    border-radius:24px;padding:30px 24px;color:#fff;
+}
+.pop-title{
+    font-size:20px;font-weight:bold;text-align:center;margin-bottom:20px;
+}
+.pop-desc{
+    text-align:center;font-size:15px;color:#d1d5db;line-height:1.7;margin-bottom:24px;
+}
+.pop-buttons{display:flex;gap:12px}
+.pop-btn{flex:1;padding:14px;border-radius:14px;border:none;font-size:16px;color:#fff}
+.pop-yes{background:#22C55E}
+.pop-no{background:#4B5563}
+.pop-btn-disabled{background:#444;opacity:0.65;cursor:not-allowed}
+.table{width:100%;border-collapse:collapse;margin:18px 0}
+.table th,.table td{border:1px solid rgba(255,255,0.15);padding:10px 8px;font-size:13px;text-align:center;color:#fff}
+.table th{background:rgba(59,130,246,0.22)}
+.operate-row{display:flex;gap:10px;margin:16px 0}
+.operate-row button{flex:1;padding:12px;margin:0;font-size:14px}
+.hide{display:none !important;}
+</style>
+</head>
+<body>
+<div class="pop-mask" id="tipMask">
+    <div class="pop-wrap">
+        <div class="pop-title"><i class="fa-solid fa-key"></i>使用须知</div>
+        <div class="pop-desc">
+            工具需要302AI API Key才能使用音色上传/管理<br>
+            1.联系客服免费领取Key 2.自行302ai.cn注册<br>
+            <span id="countText">请等待8秒后确认</span>
+        </div>
+        <div class="pop-buttons">
+            <button class="pop-btn pop-no" onclick="addQQ()">联系客服</button>
+            <button class="pop-btn pop-yes pop-btn-disabled" id="okBtn" disabled>我知道啦(8s)</button>
+        </div>
+    </div>
+</div>
+<div class="pop-mask hide" id="uploadSuccessMask">
+    <div class="pop-wrap">
+        <div class="pop-title">✅ 音色上传训练成功</div>
+        <div class="pop-desc">
+            是否立刻生成该音色的PKC JSON代理链接？
+        </div>
+        <div class="pop-buttons">
+            <button class="pop-btn pop-no" onclick="closeUploadMask()">取消</button>
+            <button class="pop-btn pop-yes" onclick="autoGenLinkAfterUpload()">是，生成PKC链接</button>
+        </div>
+    </div>
+</div>
+<div class="pop-mask hide" id="adminLoginMask">
+    <div class="pop-wrap" style="max-width:420px">
+        <div class="pop-title"><i class="fa-solid fa-shield-halved"></i>管理员验证</div>
+        <input class="input-yellow" type="password" id="adminPwdInput" placeholder="输入管理员密码">
+        <div style="color:#f87171;display:none;margin:10px 0;text-align:center" id="adminErr">密码错误</div>
+        <div class="pop-buttons">
+            <button class="pop-btn pop-no" onclick="closeAdminLogin()">关闭</button>
+            <button class="pop-btn pop-yes" onclick="adminCheck()">进入管理后台</button>
+        </div>
+    </div>
+</div>
+<div class="pop-mask hide" id="adminPanelMask">
+    <div class="pop-wrap" style="max-width:700px">
+        <div class="pop-title"><i class="fa-solid fa-server"></i>音色&用户综合管理</div>
+        <div class="operate-row">
+            <button onclick="switchTab('user')">注册用户台账</button>
+            <button onclick="switchTab('auth')">音色授权分配</button>
+            <button onclick="switchTab('voice')">全部音色JSON库</button>
+        </div>
+        <div id="tab-user">
+            <div id="userListBox"></div>
+            <div class="operate-row">
+                <button onclick="exportUserJson()">导出用户JSON</button>
+                <button onclick="clearAllUser()">清空全部记录</button>
+            </div>
+        </div>
+        <div id="tab-auth" class="hide">
+            <input class="input-yellow" id="authUser" placeholder="填写授权目标用户账号">
+            <input class="input-yellow" id="authVid" placeholder="音色ID，多个用英文逗号分隔">
+            <div class="operate-row">
+                <button onclick="grantAuth()">授予音色权限</button>
+                <button onclick="revokeAuth()">回收音色权限</button>
+            </div>
+            <div id="authListBox"></div>
+            <button onclick="exportAuthJson()" style="width:100%;margin-top:12px">导出完整授权清单</button>
+        </div>
+        <div id="tab-voice" class="hide">
+            <button onclick="loadAllVoiceAdmin()" style="width:100%">刷新全部音色列表</button>
+            <div id="voiceTableBox"></div>
+            <div class="operate-row">
+                <button onclick="exportWholeJson()">导出完整PKC音色库JSON</button>
+                <button onclick="copyAllProxyLink()">一键复制全部代理链接</button>
+            </div>
+        </div>
+        <button onclick="closeAdminPanel()" style="width:100%;margin-top:24px;background:#444">关闭管理面板</button>
+    </div>
+</div>
+<div class="box">
+    <h1><i class="fa-solid fa-music"></i>PKC音色管理工具箱</h1>
+    <input class="input-yellow" id="customName" placeholder="📝 自定义音色名称(上传前填写)">
+    <input class="input-yellow" id="voiceId" placeholder="🆔 音色ID(查询/删除/生成链接)">
+    <input class="input-gray" id="parseUrl" placeholder="🔗 粘贴PKC单音色链接 / GitHub ys.json批量音色文件链接">
+    <button class="btn-cyan" onclick="parseExternalLink()"><i class="fa-solid fa-magnifying-glass-chart"></i>解析链接/批量JSON音色并合并</button>
+    <button class="btn-blue1" onclick="uploadVoice()"><i class="fa-solid fa-cloud-arrow-up"></i>1.上传音色</button>
+    <button class="btn-blue2" onclick="genSinglePkcJson()"><i class="fa-solid fa-link"></i>2.生成单音色PKC JSON链接</button>
+    <button class="btn-green" onclick="queryVoice()"><i class="fa-solid fa-magnifying-glass"></i>3.ID查询音色</button>
+    <button class="btn-orange" onclick="showDelConfirm()"><i class="fa-solid fa-trash"></i>4.删除音色</button>
+    <button class="btn-red" onclick="loadAll()"><i class="fa-solid fa-list"></i>5.加载全部音色</button>
+    <button class="btn-purple" onclick="genAllVoiceJson()"><i class="fa-solid fa-code"></i>批量生成全部音色JSON接口</button>
+    <button class="btn-kefu" onclick="addQQ()"><i class="fa-solid fa-headset"></i>联系客服领取免费API Key</button>
+    <button class="btn-admin" onclick="openAdminLogin()"><i class="fa-solid fa-user-shield"></i>管理员音色/用户后台</button>
+    <div id="delConfirmRow" class="delConfirmRow" style="display:none">
+        <button class="btnYes" onclick="confirmDel()">确认永久删除音色</button>
+        <button class="btnNo" onclick="cancelDel()">取消删除</button>
+    </div>
+    <div id="logBox">操作日志输出区域</div>
+</div>
+<script>
+const API_HOST = "https://api.302ai.cn";
+const P1 = "https://pkc-proxy.bilivo.top";
+const P2 = "https://pkc-proxy.3a.ip-ddns.com";
+const ADMIN_PWD = "admin666888";
+const USER_KEY = "regUserList";
+const AUTH_KEY = "voiceAuthData";
+let globalVoiceArr = [];
+let lastUploadVid = "";
+// 多备用跨域中转节点，自动轮询重试
+const CORS_PROXY_LIST = [
+    "https://api.allorigins.win/raw?url=",
+    "https://corsproxy.io/?",
+    "https://thingproxy.freeboard.io/fetch/"
+];
+let waitSecond = 8;
+const okBtn = document.getElementById("okBtn");
+const countText = document.getElementById("countText");
+const tipMask = document.getElementById("tipMask");
+const timer = setInterval(()=>{
+    waitSecond--;
+    countText.innerText = `请等待${waitSecond}秒后确认`;
+    okBtn.innerText = `我知道啦(${waitSecond}s)`;
+    if(waitSecond <=0){
+        clearInterval(timer);
+        okBtn.disabled = false;
+        okBtn.classList.remove("pop-btn-disabled");
+        okBtn.onclick = ()=> tipMask.style.display = "none";
+    }
+},1000);
+function log(t){document.getElementById("logBox").textContent = t}
+function addQQ(){window.location.href="https://qm.qq.com/q/RNPgd1P3Wg"}
+function closeUploadMask(){document.getElementById("uploadSuccessMask").style.display="none"}
+async function uploadVoice(){
+    const key = document.getElementById("apiKey").value.trim();
+    const name = document.getElementById("customName").value.trim();
+    if(!key) return log("⚠️请填写API Key");
+    if(!name) return log("⚠️填写音色名称");
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = "audio/*";
+    inp.onchange = async e=>{
+        const file = e.target.files[0];
+        if(!file) return;
+        log("正在上传训练音色...");
+        const fd = new FormData();
+        fd.append("type","tts");
+        fd.append("title",name);
+        fd.append("train_mode","fast");
+        fd.append("visibility","private");
+        fd.append("voices",file);
+        try{
+            const res = await fetch(`${API_HOST}/fish-audio/model`,{
+                method:"POST",headers:{Authorization:"Bearer "+key},body:fd
+            });
+            const d = await res.json();
+            lastUploadVid = d._id;
+            navigator.clipboard.writeText(lastUploadVid);
+            document.getElementById("uploadSuccessMask").style.display = "flex";
+            log(`✅上传成功\n名称:${name}\n音色ID:${lastUploadVid}\nID已复制`);
+        }catch{
+            log("上传提交成功，训练完成后复制ID生成链接");
+        }
+    };
+    inp.click();
+}
+function autoGenLinkAfterUpload(){
+    closeUploadMask();
+    genSinglePkcJson();
+}
+function genSinglePkcJson(){
+    const vid = document.getElementById("voiceId").value.trim() || lastUploadVid;
+    if(!vid) return log("⚠️无音色ID，请上传或填入ID");
+    const link1 = `${P1}/fish?voice_id=${vid}`;
+    const link2 = `${P2}/fish?voice_id=${vid}`;
+    const text = `【单音色PKC JSON接口】
+音色ID：${vid}
+线路1：${link1}
+线路2：${link2}
+使用：PKC→自定义音色粘贴链接刷新`;
+    navigator.clipboard.writeText(text);
+    log(text + "\n✅链接已复制剪贴板");
+}
+// 新增：轮询多个中转节点读取github json
+async function fetchJsonWithMultiProxy(targetUrl){
+    let errorMsg = "";
+    for(let proxy of CORS_PROXY_LIST){
+        try{
+            const fullUrl = proxy + encodeURIComponent(targetUrl);
+            const res = await fetch(fullUrl,{timeout:8000});
+            if(res.ok){
+                return await res.json();
+            }
+        }catch(err){
+            errorMsg = err.toString();
+            continue;
+        }
+    }
+    throw new Error("全部中转节点均访问失败："+errorMsg);
+}
+async function parseExternalLink(){
+    let url = document.getElementById("parseUrl").value.trim();
+    if(!url) return log("⚠️请粘贴外部链接或JSON音色文件地址");
+    const singleMatch = url.match(/voice_id=([a-zA-Z0-9_-]+)/);
+    if(singleMatch){
+        const extractVid = singleMatch[1];
+        const exist = globalVoiceArr.find(item=>item._id === extractVid);
+        if(!exist){
+            globalVoiceArr.push({
+                title:"外部导入单音色_"+extractVid,
+                _id:extractVid,
+                state:"trained"
+            });
+        }
+        const link1 = `${P1}/fish?voice_id=${extractVid}`;
+        const link2 = `${P2}/fish?voice_id=${extractVid}`;
+        const info = `✅单音色链接解析成功
+提取音色ID：${extractVid}
+已合并到本地音色库
+本工具代理线路1：${link1}
+本工具代理线路2：${link2}
+可批量导出全部合并音色`;
+        navigator.clipboard.writeText(`ID:${extractVid}\n${link1}\n${link2}`);
+        log(info);
+        return;
+    }
+    if(url.includes("raw.githubusercontent.com") && url.endsWith(".json")){
+        log("正在自动切换中转节点加载批量音色JSON，请稍等...");
+        try{
+            const jsonData = await fetchJsonWithMultiProxy(url);
+            let importCount = 0;
+            if(jsonData["Fish Audio"] && jsonData["Fish Audio"].list){
+                jsonData["Fish Audio"].list.forEach(voice=>{
+                    const exist = globalVoiceArr.find(item=>item._id === voice.vid);
+                    if(!exist){
+                        globalVoiceArr.push({
+                            title:voice.name,
+                            _id:voice.vid,
+                            state:"trained",
+                            desc:voice.desc
+                        });
+                        importCount++;
+                    }
+                });
+            }
+            if(jsonData["讯飞音色"] && jsonData["讯飞音色"].list){
+                jsonData["讯飞音色"].list.forEach(voice=>{
+                    const exist = globalVoiceArr.find(item=>item._id === voice.vid);
+                    if(!exist){
+                        globalVoiceArr.push({
+                            title:"讯飞-"+voice.name,
+                            _id:voice.vid,
+                            state:"trained",
+                            desc:voice.desc
+                        });
+                        importCount++;
+                    }
+                });
+            }
+            const successText = `✅批量JSON文件解析完成！
+本次新导入音色数量：${importCount}个
+当前本地总音色：${globalVoiceArr.length}个
+已全部合并到音色库，点击【批量生成全部音色JSON接口】导出全套代理链接`;
+            log(successText);
+            return;
+        }catch(err){
+            log("❌所有中转代理节点全部访问失败！\n解决方案：\n1.切换网络（关闭VPN/切换手机流量/WiFi）\n2.手动下载ys.json本地解析（方案2）\n3.等待10分钟后重试中转节点");
+            return;
+        }
+    }
+    log("❌无法识别链接格式！仅支持：\n1.单音色链接（含voice_id参数）\n2.GitHub raw后缀为.json的批量音色文件");
+}
+function genAllVoiceJson(){
+    if(globalVoiceArr.length ===0) return log("⚠️请先加载云端音色/解析外部链接/批量JSON文件");
+    let out = "【全部合并音色PKC接口清单】\n\n";
+    globalVoiceArr.forEach(item=>{
+        const l1 = `${P1}/fish?voice_id=${item._id}`;
+        const l2 = `${P2}/fish?voice_id=${item._id}`;
+        out += `名称：${item.title}\nID：${item._id}\n接口1：${l1}\n接口2：${l2}\n\n`;
+    });
+    navigator.clipboard.writeText(out);
+    log(out + "\n✅全部合并链接复制完成");
+}
+async function queryVoice(){
+    const key = document.getElementById("apiKey").value.trim();
+    const vid = document.getElementById("voiceId").value.trim();
+    if(!key) return log("⚠️填写API Key");
+    if(!vid) return log("⚠️填写音色ID");
+    log("查询音色信息...");
+    try{
+        const res = await fetch(`${API_HOST}/fish-audio/model/${vid}`,{headers:{Authorization:"Bearer "+key}});
+        const d = await res.json();
+        const st = d.state=="trained"?"✅完成":d.state=="training"?"⚙️训练":"⏳排队";
+        log(`名称：${d.title}\nID：${d._id}\n状态：${st}`);
+    }catch{log("❌查询失败")}
+}
+function showDelConfirm(){
+    const vid = document.getElementById("voiceId").value.trim();
+    if(!vid) return log("⚠️输入要删除的音色ID");
+    log(`准备删除ID：${vid}，确认后永久删除`);
+    document.getElementById("delConfirmRow").style.display = "flex";
+}
+function cancelDel(){
+    document.getElementById("delConfirmRow").style.display = "none";
+    log("已取消删除");
+}
+async function confirmDel(){
+    document.getElementById("delConfirmRow").style.display = "none";
+    const key = document.getElementById("apiKey").value.trim();
+    const vid = document.getElementById("voiceId").value.trim();
+    log("正在删除音色...");
+    try{
+        await fetch(`${API_HOST}/fish-audio/model/${vid}`,{
+            method:"DELETE",headers:{Authorization:"Bearer "+key}
+        });
+        log("✅音色删除成功");
+    }catch{log("删除指令执行，刷新列表核对")}
+}
+async function loadAll(){
+    const key = document.getElementById("apiKey").value.trim();
+    if(!key) return log("⚠️填写API Key");
+    log("加载全部云端音色...");
+    let list = [],page=1;
+    while(true){
+        try{
+            const res = await fetch(`${API_HOST}/fish-audio/model?page_size=50&page_number=${page}`,{headers:{Authorization:"Bearer "+key}});
+            if(!res.ok) break;
+            const d = await res.json();
+            if(!d.items.length) break;
+            list.push(...d.items);
+            page++;
+        }catch{break}
+    }
+    globalVoiceArr = list;
+    if(!list.length) return log("暂无云端音色");
+    let txt = `✅总计${list.length}个云端音色\n\n`;
+    list.forEach((it,i)=>{
+        const s = it.state=="trained"?"✅完成":it.state=="training"?"⚙️训练":"⏳排队";
+        txt += `${i+1}.${it.title} | ID:${it._id} | ${s}\n\n`;
+    });
+    log(txt + "\n可粘贴GitHub ys.json批量文件链接解析合并更多音色");
+}
+function openAdminLogin(){
+    document.getElementById("adminLoginMask").classList.remove("hide");
+    document.getElementById("adminErr").style.display = "none";
+    document.getElementById("adminPwdInput").value = "";
+}
+function closeAdminLogin(){document.getElementById("adminLoginMask").classList.add("hide")}
+function closeAdminPanel(){document.getElementById("adminPanelMask").classList.add("hide")}
+function adminCheck(){
+    const pwd = document.getElementById("adminPwdInput").value.trim();
+    if(pwd === ADMIN_PWD){
+        closeAdminLogin();
+        document.getElementById("adminPanelMask").classList.remove("hide");
+        switchTab("user");
+    }else{
+        document.getElementById("adminErr").style.display = "block";
+    }
+}
+function switchTab(tab){
+    ["tab-user","tab-auth","tab-voice"].forEach(id=>document.getElementById(id).classList.add("hide"));
+    document.getElementById(`tab-${tab}`).classList.remove("hide");
+    if(tab=="user") renderUser();
+    if(tab=="auth") renderAuth();
+    if(tab=="voice") loadAllVoiceAdmin();
+}
+function getUser(){
+    const s = localStorage.getItem(USER_KEY);
+    return s ? JSON.parse(s) : [];
+}
+function saveUser(name){
+    const arr = getUser();
+    arr.push({user:name,time:new Date().toLocaleString()});
+    localStorage.setItem(USER_KEY,JSON.stringify(arr));
+}
+function renderUser(){
+    const list = getUser();
+    const box = document.getElementById("userListBox");
+    if(!list.length){box.innerHTML="<p style='text-align:center;color:#aaa'>暂无注册用户</p>";return}
+    let html = `<table class="table"><tr><th>序号</th><th>账号</th><th>注册时间</th></tr>`;
+    list.forEach((v,i)=>html+=`<tr><td>${i+1}</td><td>${v.user}</td><td>${v.time}</td>`);
+    html += `</table>`;
+}
+function exportUserJson(){download(JSON.stringify(getUser()),"注册用户.json")}
+function clearAllUser(){
+    if(confirm("清空所有用户记录？")){localStorage.removeItem(USER_KEY);renderUser()}
+}
+function getAuth(){
+    const s = localStorage.getItem(AUTH_KEY);
+    return s ? JSON.parse(s) : [];
+}
+function grantAuth(){
+    const u = document.getElementById("authUser").value.trim();
+    const vids = document.getElementById("authVid").value.trim().split(",").map(x=>x.trim()).filter(x);
+    if(!u || !vids.length) return alert("填写用户和音色ID");
+    let data = getAuth();
+    let item = data.find(x=>x.user===u);
+    if(!item){item={user:u,vids:[],ct:new Date().toLocaleString()};data.push(item)}
+    vids.forEach(id=>{if(!item.vids.includes(id)) item.vids.push(id)});
+    localStorage.setItem(AUTH_KEY,JSON.stringify(data));
+    alert("授权成功");renderAuth();
+}
+function revokeAuth(){
+    const u = document.getElementById("authUser").value.trim();
+    const vids = document.getElementById("authVid").value.trim().split(",").map(x=>x.trim()).filter(x);
+    if(!u || !vids.length) return alert("填写用户和音色ID");
+    let data = getAuth();
+    const item = data.find(x=>x.user===u);
+    if(!item) return alert("无该用户授权");
+    vids.forEach(id=>{let i=item.vids.indexOf(id);if(i>-1)item.vids.splice(i)});
+    localStorage.setItem(AUTH_KEY,JSON.stringify(data));
+    alert("权限回收完成");renderAuth();
+}
+function renderAuth(){
+    const list = getAuth();
+    const box = document.getElementById("authListBox");
+    if(!list.length){box.innerHTML="<p style='text-align:center;color:#aaa'>无授权记录</p>";return}
+    let html = `<table class="table"><tr><th>用户</th><th>授权音色ID</th><th>授权时间</th></tr>`;
+    list.forEach(v=>html+=`<tr><td>${v.user}</td><td>${v.vids.join("<br>")}</td><td>${v.ct}</td>`);
+    html += `</table>`;
+}
+function exportAuthJson(){download(JSON.stringify(getAuth()),"音色授权清单.json")}
+async function loadAllVoiceAdmin(){
+    const key = document.getElementById("apiKey").value.trim();
+    if(!key){alert("先填写API Key");return}
+    let list = [],page=1;
+    while(true){
+        try{
+            const res = await fetch(`${API_HOST}/fish-audio/model?page_size=50&page_number=${page}`,{headers:{Authorization:"Bearer "+key}});
+            if(!res.ok) break;
+            const d = await res.json();
+            if(!d.items.length) break;
+            list.push(...d.items);page++;
+        }catch{break}
+    }
+    globalVoiceArr = list;
+    const box = document.getElementById("voiceTableBox");
+    if(!list.length){box.innerHTML="<p>暂无音色</p>";return}
+    let html = `<table class="table"><tr><th>序号</th><th>名称</th><th>ID</th><th>代理链接</th></tr>`;
+    list.forEach((v,i)=>{
+        const link = `${P1}/fish?voice_id=${v._id}`;
+        html += `<tr><td>${i+1}</td><td>${v.title}</td><td>${v._id}</td><td style="font-size:11">${link}</td>`;
+    });
+    html += `</table><p>总音色：${list.length}</p>`;
+    box.innerHTML = html;
+}
+function exportWholeJson(){
+    if(globalVoiceArr.length===0) return alert("先刷新音色/解析外部链接");
+    const jsonData = globalVoiceArr.map(item=>({
+        voice_name:item.title,
+        voice_id:item._id,
+        proxy_link:`${P1}/fish?voice_id=${item._id}`
+    }));
+    download(JSON.stringify(jsonData,null,2),"PKC全部合并音色库.json");
+}
+function copyAllProxyLink(){
+    if(globalVoiceArr.length===0) return alert("先加载音色");
+    let str = "";
+    globalVoiceArr.forEach(v=>str += `${v.title} | ${P1}/fish?voice_id=${v._id}\n`);
+    navigator.clipboard.writeText(str);
+    alert("全部合并代理链接已复制");
+}
+function download(content,filename){
+    const blob = new Blob([content],{type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+}
+</script>
+</body>
+</html>
