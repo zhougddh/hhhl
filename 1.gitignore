@@ -1,0 +1,14 @@
+# 数据库相关
+*.sqlite
+*.db
+*.sqlite3
+.env
+
+# node依赖、日志
+node_modules/
+npm-debug.log
+*.log
+
+# 编辑器、系统垃圾文件
+.DS_Store
+.vscode/
