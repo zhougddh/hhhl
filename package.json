@@ -1,5 +1,5 @@
 {
-  "name": "xiaomi-ai-voice",
+  "name": "voice-web",
   "version": "1.0.0",
   "scripts": {
     "start": "node server.js"
