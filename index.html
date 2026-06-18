@@ -23,6 +23,7 @@ h1{
     letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:12px
 }
 h1 i{font-size:36px;color:#fff}
+/* 黄色输入框 文字清晰可见 */
 .input-yellow{
     width:100%;padding:16px 18px;margin:12px 0;
     background:#FFDD00;
@@ -33,6 +34,7 @@ h1 i{font-size:36px;color:#fff}
 .input-yellow::placeholder{
     color:#222;opacity:0.8
 }
+/* JSON链接灰色输入框 */
 .input-gray{
     width:100%;padding:16px 18px;margin:12px 0;
     background:#27272a;
@@ -61,16 +63,33 @@ button:hover{transform:translateY(-2px);filter:brightness(1.08)}
 .delConfirmRow{display:flex;gap:12px;margin:16px 0}
 .btnYes{background:#EF4444;width:50%}
 .btnNo{background:#6B7280;width:50%}
+/* ========== 日志框 新增完整滚动条配置 ========== */
 #logBox{
-    width:100%;min-height:180px;background:rgba(0,0,0,0.35);
+    width:100%;
+    height:220px; /* 固定高度，内容溢出自动出现滚动 */
+    background:rgba(0,0,0,0.35);
     border:1px solid rgba(255,255,0.12);
     border-radius:16px;margin-top:20px;padding:20px;
     white-space:pre-wrap;font-size:14px;line-height:1.7;color:#f1f1f1;
-    overflow-y:auto;max-height:300px
+    overflow-x:hidden;
+    overflow-y:auto; /* 纵向滚动条 */
 }
-#logBox::-webkit-scrollbar{width:6px}
-#logBox::-webkit-scrollbar-track{background:rgba(255,255,255,0.06)}
-#logBox::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.22)}
+/* 自定义滚动条美化 */
+#logBox::-webkit-scrollbar{
+    width:8px; /* 滚动条宽度 */
+}
+#logBox::-webkit-scrollbar-track{
+    background:rgba(255,255,255,0.06);
+    border-radius:4px;
+}
+#logBox::-webkit-scrollbar-thumb{
+    background:rgba(255,255,255,0.25);
+    border-radius:4px;
+}
+#logBox::-webkit-scrollbar-thumb:hover{
+    background:rgba(255,255,255,0.35);
+}
+/* 弹窗样式 */
 .pop-mask{
     position:fixed;top:0;left:0;width:100%;height:100%;
     background:rgba(0,0,0,0.82);z-index:9999;
@@ -101,6 +120,7 @@ button:hover{transform:translateY(-2px);filter:brightness(1.08)}
 </style>
 </head>
 <body>
+<!-- 8秒使用须知弹窗 -->
 <div class="pop-mask" id="tipMask">
     <div class="pop-wrap">
         <div class="pop-title"><i class="fa-solid fa-key"></i>使用须知</div>
@@ -115,6 +135,8 @@ button:hover{transform:translateY(-2px);filter:brightness(1.08)}
         </div>
     </div>
 </div>
+
+<!-- 上传成功弹窗 -->
 <div class="pop-mask hide" id="uploadSuccessMask">
     <div class="pop-wrap">
         <div class="pop-title">✅ 音色上传训练成功</div>
@@ -127,6 +149,8 @@ button:hover{transform:translateY(-2px);filter:brightness(1.08)}
         </div>
     </div>
 </div>
+
+<!--管理员登录弹窗-->
 <div class="pop-mask hide" id="adminLoginMask">
     <div class="pop-wrap" style="max-width:420px">
         <div class="pop-title"><i class="fa-solid fa-shield-halved"></i>管理员验证</div>
@@ -138,6 +162,8 @@ button:hover{transform:translateY(-2px);filter:brightness(1.08)}
         </div>
     </div>
 </div>
+
+<!--管理员后台面板-->
 <div class="pop-mask hide" id="adminPanelMask">
     <div class="pop-wrap" style="max-width:700px">
         <div class="pop-title"><i class="fa-solid fa-server"></i>音色&用户综合管理</div>
@@ -174,12 +200,19 @@ button:hover{transform:translateY(-2px);filter:brightness(1.08)}
         <button onclick="closeAdminPanel()" style="width:100%;margin-top:24px;background:#444">关闭管理面板</button>
     </div>
 </div>
+
 <div class="box">
     <h1><i class="fa-solid fa-music"></i>PKC音色管理工具箱</h1>
+
+    <!-- 3个完整黄色输入框（已恢复缺失的自定义音色名称） -->
+    <input class="input-yellow" id="apiKey" placeholder="🔑 302AI API Key">
     <input class="input-yellow" id="customName" placeholder="📝 自定义音色名称(上传前填写)">
     <input class="input-yellow" id="voiceId" placeholder="🆔 音色ID(查询/删除/生成链接)">
+
+    <!-- 外部JSON链接输入框 -->
     <input class="input-gray" id="parseUrl" placeholder="🔗 粘贴PKC单音色链接 / GitHub ys.json批量音色文件链接">
     <button class="btn-cyan" onclick="parseExternalLink()"><i class="fa-solid fa-magnifying-glass-chart"></i>解析链接/批量JSON音色并合并</button>
+
     <button class="btn-blue1" onclick="uploadVoice()"><i class="fa-solid fa-cloud-arrow-up"></i>1.上传音色</button>
     <button class="btn-blue2" onclick="genSinglePkcJson()"><i class="fa-solid fa-link"></i>2.生成单音色PKC JSON链接</button>
     <button class="btn-green" onclick="queryVoice()"><i class="fa-solid fa-magnifying-glass"></i>3.ID查询音色</button>
@@ -188,13 +221,17 @@ button:hover{transform:translateY(-2px);filter:brightness(1.08)}
     <button class="btn-purple" onclick="genAllVoiceJson()"><i class="fa-solid fa-code"></i>批量生成全部音色JSON接口</button>
     <button class="btn-kefu" onclick="addQQ()"><i class="fa-solid fa-headset"></i>联系客服领取免费API Key</button>
     <button class="btn-admin" onclick="openAdminLogin()"><i class="fa-solid fa-user-shield"></i>管理员音色/用户后台</button>
+
     <div id="delConfirmRow" class="delConfirmRow" style="display:none">
         <button class="btnYes" onclick="confirmDel()">确认永久删除音色</button>
         <button class="btnNo" onclick="cancelDel()">取消删除</button>
     </div>
-    <div id="logBox">操作日志输出区域</div>
+    <!-- 带滚动条的日志输出框 -->
+    <div id="logBox">操作日志输出区域，日志过多可拖动右侧滚动条上下查看</div>
 </div>
+
 <script>
+//全局配置
 const API_HOST = "https://api.302ai.cn";
 const P1 = "https://pkc-proxy.bilivo.top";
 const P2 = "https://pkc-proxy.3a.ip-ddns.com";
@@ -209,6 +246,8 @@ const CORS_PROXY_LIST = [
     "https://corsproxy.io/?",
     "https://thingproxy.freeboard.io/fetch/"
 ];
+
+//8秒倒计时弹窗
 let waitSecond = 8;
 const okBtn = document.getElementById("okBtn");
 const countText = document.getElementById("countText");
@@ -224,9 +263,12 @@ const timer = setInterval(()=>{
         okBtn.onclick = ()=> tipMask.style.display = "none";
     }
 },1000);
+
 function log(t){document.getElementById("logBox").textContent = t}
 function addQQ(){window.location.href="https://qm.qq.com/q/RNPgd1P3Wg"}
 function closeUploadMask(){document.getElementById("uploadSuccessMask").style.display="none"}
+
+//1.上传音色
 async function uploadVoice(){
     const key = document.getElementById("apiKey").value.trim();
     const name = document.getElementById("customName").value.trim();
@@ -260,10 +302,14 @@ async function uploadVoice(){
     };
     inp.click();
 }
+
+//上传后自动生成链接
 function autoGenLinkAfterUpload(){
     closeUploadMask();
     genSinglePkcJson();
 }
+
+//2.单音色生成PKC JSON代理链接
 function genSinglePkcJson(){
     const vid = document.getElementById("voiceId").value.trim() || lastUploadVid;
     if(!vid) return log("⚠️无音色ID，请上传或填入ID");
@@ -277,7 +323,8 @@ function genSinglePkcJson(){
     navigator.clipboard.writeText(text);
     log(text + "\n✅链接已复制剪贴板");
 }
-// 新增：轮询多个中转节点读取github json
+
+// 多代理轮询读取GitHub JSON
 async function fetchJsonWithMultiProxy(targetUrl){
     let errorMsg = "";
     for(let proxy of CORS_PROXY_LIST){
@@ -294,9 +341,13 @@ async function fetchJsonWithMultiProxy(targetUrl){
     }
     throw new Error("全部中转节点均访问失败："+errorMsg);
 }
+
+//3.解析外部链接/批量JSON文件
 async function parseExternalLink(){
     let url = document.getElementById("parseUrl").value.trim();
     if(!url) return log("⚠️请粘贴外部链接或JSON音色文件地址");
+
+    // 单音色链接匹配
     const singleMatch = url.match(/voice_id=([a-zA-Z0-9_-]+)/);
     if(singleMatch){
         const extractVid = singleMatch[1];
@@ -320,6 +371,8 @@ async function parseExternalLink(){
         log(info);
         return;
     }
+
+    // GitHub ys.json批量文件解析
     if(url.includes("raw.githubusercontent.com") && url.endsWith(".json")){
         log("正在自动切换中转节点加载批量音色JSON，请稍等...");
         try{
@@ -360,12 +413,15 @@ async function parseExternalLink(){
             log(successText);
             return;
         }catch(err){
-            log("❌所有中转代理节点全部访问失败！\n解决方案：\n1.切换网络（关闭VPN/切换手机流量/WiFi）\n2.手动下载ys.json本地解析（方案2）\n3.等待10分钟后重试中转节点");
+            log("❌所有中转代理节点全部访问失败！\n解决方案：\n1.切换网络（关闭VPN/切换手机流量/WiFi）\n2.手动下载ys.json本地解析\n3.等待10分钟后重试中转节点");
             return;
         }
     }
+
     log("❌无法识别链接格式！仅支持：\n1.单音色链接（含voice_id参数）\n2.GitHub raw后缀为.json的批量音色文件");
 }
+
+//4.批量生成全部音色JSON链接
 function genAllVoiceJson(){
     if(globalVoiceArr.length ===0) return log("⚠️请先加载云端音色/解析外部链接/批量JSON文件");
     let out = "【全部合并音色PKC接口清单】\n\n";
@@ -377,6 +433,8 @@ function genAllVoiceJson(){
     navigator.clipboard.writeText(out);
     log(out + "\n✅全部合并链接复制完成");
 }
+
+//5.查询音色
 async function queryVoice(){
     const key = document.getElementById("apiKey").value.trim();
     const vid = document.getElementById("voiceId").value.trim();
@@ -390,6 +448,8 @@ async function queryVoice(){
         log(`名称：${d.title}\nID：${d._id}\n状态：${st}`);
     }catch{log("❌查询失败")}
 }
+
+//6.删除音色
 function showDelConfirm(){
     const vid = document.getElementById("voiceId").value.trim();
     if(!vid) return log("⚠️输入要删除的音色ID");
@@ -412,6 +472,8 @@ async function confirmDel(){
         log("✅音色删除成功");
     }catch{log("删除指令执行，刷新列表核对")}
 }
+
+//7.加载全部云端音色
 async function loadAll(){
     const key = document.getElementById("apiKey").value.trim();
     if(!key) return log("⚠️填写API Key");
@@ -436,6 +498,8 @@ async function loadAll(){
     });
     log(txt + "\n可粘贴GitHub ys.json批量文件链接解析合并更多音色");
 }
+
+//管理员弹窗控制
 function openAdminLogin(){
     document.getElementById("adminLoginMask").classList.remove("hide");
     document.getElementById("adminErr").style.display = "none";
@@ -460,6 +524,8 @@ function switchTab(tab){
     if(tab=="auth") renderAuth();
     if(tab=="voice") loadAllVoiceAdmin();
 }
+
+//用户台账
 function getUser(){
     const s = localStorage.getItem(USER_KEY);
     return s ? JSON.parse(s) : [];
@@ -481,6 +547,8 @@ function exportUserJson(){download(JSON.stringify(getUser()),"注册用户.json"
 function clearAllUser(){
     if(confirm("清空所有用户记录？")){localStorage.removeItem(USER_KEY);renderUser()}
 }
+
+//音色授权台账
 function getAuth(){
     const s = localStorage.getItem(AUTH_KEY);
     return s ? JSON.parse(s) : [];
@@ -516,6 +584,8 @@ function renderAuth(){
     html += `</table>`;
 }
 function exportAuthJson(){download(JSON.stringify(getAuth()),"音色授权清单.json")}
+
+//管理员音色总览
 async function loadAllVoiceAdmin(){
     const key = document.getElementById("apiKey").value.trim();
     if(!key){alert("先填写API Key");return}
@@ -556,6 +626,7 @@ function copyAllProxyLink(){
     navigator.clipboard.writeText(str);
     alert("全部合并代理链接已复制");
 }
+//文件下载工具
 function download(content,filename){
     const blob = new Blob([content],{type:"application/json"});
     const a = document.createElement("a");
